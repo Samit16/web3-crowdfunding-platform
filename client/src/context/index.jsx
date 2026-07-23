@@ -12,23 +12,58 @@ const StateContext = createContext();
 
 export const StateContextProvider = ({ children }) => {
   console.log("Provider mounted");
+  const { connect:connectWalletHook } = useConnect();
+
+  const client = createThirdwebClient({
+    clientId: "a6035caf91e001bf0e71b442d48ad6e6",
+  });
+
+const account = useActiveAccount();
+const address = account?.address;
+
+const contract = getContract({
+  client,
+  chain: sepolia,
+  address: "0xee28Ef39a00959C78a13C50886aB9D411AaD6b15",
+});
+
+const {
+  connect,
+  isConnecting,
+  error,
+} = useConnect();
+
+
+const connectWallet = async () => {
+  try {
+    await twConnect(async () => {
+      const wallet = createWallet("io.metamask");
+      await wallet.connect({ client });
+      return wallet;
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <StateContext.Provider
       value={{
-        address: null,
-        connect: () => console.log("clicked"),
+        address,
+        connect: connectWallet,
       }}
+
     >
       {children}
     </StateContext.Provider>
   );
 };
 
+export const useStateContext = () => useContext(StateContext);
 // const account = useActiveAccount();
 // const address = account?.address;
 
-// const { connect } = useConnect();
+
 
 // const connectWallet = async () => {
 //   try {
@@ -165,6 +200,5 @@ export const StateContextProvider = ({ children }) => {
 //     {children}
 //     </StateContext.Provider>
 //   )
-// }
 
-export const useStateContext = () => useContext(StateContext);
+// export const useStateContext = () => useContext(StateContext);
